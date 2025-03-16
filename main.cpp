@@ -3,7 +3,7 @@
 #include <string>
 #include <stdexcept>
 
-class Lox {
+class LexTree {
 private:
 
 public:
@@ -33,7 +33,6 @@ public:
                 std::cout << "> ";
                 if (!std::getline(std::cin, line)) break;
                 run(line);
-                hadError = false;
             }
         } catch (const std::exception& e) {
             std::cerr << "Error in REPL: " << e.what() << std::endl;
@@ -53,9 +52,9 @@ int main(int argc, char* argv[]) {
             std::cout << "Usage: lox [script]" << std::endl;
             return 64;
         } else if (argc == 2) {
-            Lox::runFile(argv[1]);
+            LexTree::runFile(argv[1]);
         } else {
-            Lox::runPrompt();
+            LexTree::runPrompt();
         }
     } catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
