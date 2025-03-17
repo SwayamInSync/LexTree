@@ -3,4 +3,8 @@ project(LexTree)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(LexTree main.cpp)
+add_executable(LexTree
+        LexTree.h
+        LexTree.cpp
+        main.cpp
+)
