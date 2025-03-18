@@ -1,4 +1,4 @@
-#include "LexTree.h"
+#include "LexTree/LexTree.h"
 #include <iostream>
 
 int main(int argc, const char ** argv)
