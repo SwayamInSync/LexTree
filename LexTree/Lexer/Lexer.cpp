@@ -138,7 +138,7 @@ namespace lex
          * Lex has multi-line string support as "<l1>\n<l2>" basically no special symbol required like (""")
         */
 
-        while(peek() == '"' && !is_at_end())
+        while(peek() != '"' && !is_at_end())
         {
             if(peek() == '\n')
                 line++;
@@ -202,7 +202,7 @@ namespace lex
             advance();
 
         std::string text = source.substr(start, current-start);
-        TokenType type = TokenType::IDENTIFIER;
+        TokenType type = TokenType::IDENTIFIER; // default to identifier
 
         const auto& keywords = getKeywords();
         auto it = keywords.find(text);
