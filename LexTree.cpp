@@ -1,6 +1,8 @@
 #include "LexTree.h"
+#include "Lexer/Lexer.h"
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <sstream>
 
 namespace lex
@@ -36,9 +38,13 @@ namespace lex
         }
     }
 
-    void LexTree::run(const std::string &source) {
-        std::cout << source << "\n";
-        error(2, "yo");
+    void LexTree::run(const std::string &source)
+    {
+        Lexer lexer = Lexer(source);
+        std::vector<Token> tokens = lexer.scan_tokens();
+
+        for(const auto& token : tokens)
+            std::cout << token.to_string() << "\n";
     }
 
     void LexTree::error(int line, const std::string &message) {

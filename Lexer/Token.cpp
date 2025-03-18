@@ -1,32 +1,8 @@
-#pragma once
+#include "Token.h"
+#include <sstream>
 
 namespace lex
 {
-    enum class TokenType
-    {
-        // single-character tokens
-
-        LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-        COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
-
-        // one or two character tokens
-        BANG, BANG_EQUAL,
-        EQUAL, EQUAL_EQUAL,
-        GREATER, GREATER_EQUAL,
-        LESS, LESS_EQUAL,
-
-        // identifiers
-        IDENTIFIER, STRING, NUMBER,
-
-        // keywords
-        AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR, PRINT, RETURN,
-        SUPER, THIS, TRUE, VAR, WHILE,
-
-        // End Of File Token
-        EOF_TOKEN,
-
-    };
-
     const char* tokentype_to_string(TokenType type)
     {
         switch (type)
@@ -114,4 +90,19 @@ namespace lex
         }
     }
 
+    std::string Token::to_string() const
+    {
+        std::ostringstream oss;
+        oss << tokentype_to_string(type) << " " << lexeme << " ";
+
+        if(std::holds_alternative<std::string>(literal))
+            oss << std::get<std::string>(literal);
+        else if(std::holds_alternative<double>(literal))
+            oss << std::get<double>(literal);
+        else if(std::holds_alternative<bool>(literal))
+            oss << (std::get<bool>(literal) ? "true" : "false");
+        else
+            oss << "nil";
+        return oss.str();
+    }
 }
