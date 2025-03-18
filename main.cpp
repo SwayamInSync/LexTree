@@ -10,11 +10,11 @@ int main(int argc, const char ** argv)
     }
     else if (argc == 2)
     {
-        LexTree::runFile(argv[1]);
+        lex::LexTree::runFile(argv[1]);
     }
     else
     {
-        LexTree::runPrompt();
+        lex::LexTree::runPrompt();
     }
 
     return 0;

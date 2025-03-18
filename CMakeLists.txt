@@ -7,4 +7,7 @@ add_executable(LexTree
         LexTree.h
         LexTree.cpp
         main.cpp
+        TokenType.h
+        Token.cpp
+        Token.h
 )
