@@ -65,6 +65,10 @@ namespace lex
                         advance();
                     }
                 }
+                else if(match('*'))
+                {
+                  multiline_comment();
+                }
                 else
                 {
                     addToken(TokenType::SLASH); // treating as division operator
@@ -212,4 +216,32 @@ namespace lex
         }
         addToken(type);
     }
+
+    void Lexer::multiline_comment() 
+    {
+      int nestLevel = 1;
+      
+      while (!is_at_end() && nestLevel > 0) {
+          if (peek() == '/' && peek_next() == '*') {
+              // Found a nested comment start
+              advance(); // consume '/'
+              advance(); // consume '*'
+              nestLevel++;
+          } else if (peek() == '*' && peek_next() == '/') {
+              // Found a comment end
+              advance(); // consume '*'
+              advance(); // consume '/'
+              nestLevel--;
+          } else if (peek() == '\n') {
+              line++; // Track line numbers
+              advance();
+          } else {
+              advance();
+          }
+      }
+      
+      if (nestLevel > 0) {
+          LexTree::error(line, "Unterminated block comment.");
+      }
+  }
 }

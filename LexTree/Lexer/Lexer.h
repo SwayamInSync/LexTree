@@ -32,6 +32,7 @@ namespace lex
         bool is_alphanumeric(char c) const;
         void number();
         void identifier();
+        void multiline_comment();
 
 
     public:
