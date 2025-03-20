@@ -1,5 +1,5 @@
 /*
-- This file is a demo file demonstrating the BASE code structure of AST-generator (this phase is autommated)
+- This file is a human written demo file demonstrating the BASE code structure of AST-generator (this phase is autommated)
 - READ ONLY and understanding the visitor pattern
 - I also added a markdown file explaining this pattern inside utility/visitor_pattern.md :)
 */
