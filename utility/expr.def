@@ -1,0 +1,7 @@
+# Expression AST definitions for Lex language
+# Format: ClassName : Type1 field1, Type2 field2, ...
+
+Binary   : ExprPtr left, Token operator_token, ExprPtr right
+Grouping : ExprPtr expression
+Literal  : LiteralValue value
+Unary    : Token operator_token, ExprPtr right
