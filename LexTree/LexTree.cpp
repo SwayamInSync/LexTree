@@ -1,5 +1,7 @@
 #include "LexTree.h"
 #include "Lexer/Lexer.h"
+#include "Parser/parser.h"
+#include "../utility/ASTPrinter.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -42,9 +44,17 @@ namespace lex
     {
         Lexer lexer = Lexer(source);
         std::vector<Token> tokens = lexer.scan_tokens();
+        for(const auto& token: tokens)
+            std::cout << token.lexeme << " ";
+        std::cout << std::endl;
+        Parser parser = Parser(tokens);
+        ExprPtr expression = parser.parse();
 
-        for(const auto& token : tokens)
-            std::cout << token.to_string() << "\n";
+        if (hadError)
+            return;
+        ASTPrinter printer;
+        std::cout << printer.print(expression.get()) << std::endl;
+
     }
 
     void LexTree::error(int line, const std::string &message) {

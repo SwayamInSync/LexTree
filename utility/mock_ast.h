@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "LexTree/Lexer/Token.h"
+#include "../LexTree/Lexer/Token.h"
 #include <memory>
 #include <any>
 #include <variant>
