@@ -24,6 +24,8 @@ namespace lex
 
         // Production rules
         ExprPtr expression();
+        ExprPtr comma();
+        ExprPtr conditional();
         ExprPtr equality();
         ExprPtr comparison();
         ExprPtr term();

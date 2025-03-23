@@ -209,9 +209,9 @@ void define_ast(const std::string& outputDir, const std::string& file_path) {
     }
     
     // Write the file header
-    writer << "This is auto-generated file, using the utility/generate_ast.cpp\n";
+    writer << "// This is auto-generated file, using the utility/generate_ast.cpp\n";
     writer << "#pragma once\n\n";
-    writer << "#include \"Lexer/Token.h\"\n";
+    writer << "#include \"../Lexer/Token.h\"\n";
     writer << "#include <memory>\n";
     writer << "#include <utility>\n";
     writer << "#include <any>\n\n";

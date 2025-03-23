@@ -5,3 +5,5 @@ Binary   : ExprPtr left, Token operator_token, ExprPtr right
 Grouping : ExprPtr expression
 Literal  : LiteralValue value
 Unary    : Token operator_token, ExprPtr right
+Ternary  : ExprPtr condition, ExprPtr then_branch, ExprPtr else_branch
+Variable : Token name

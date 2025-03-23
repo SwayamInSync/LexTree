@@ -29,6 +29,17 @@ namespace lex
       return oss.str();
     }
 
+      std::string parenthesize(const std::string& name, Expr* first, Expr* second, Expr* third)
+      {
+          std::ostringstream oss;
+          oss << "(" << name << " ";
+          oss << std::any_cast<std::string>(first->accept(this)) << " ";
+          oss << std::any_cast<std::string>(second->accept(this)) << " ";
+          oss << std::any_cast<std::string>(third->accept(this));
+          oss << ")";
+          return oss.str();
+      }
+
   public:
     std::string print(Expr * expr)
     {
@@ -66,6 +77,16 @@ namespace lex
     std::any visitUnaryExpr(Unary* expr) override 
     {
         return parenthesize(expr->operator_token.lexeme, expr->right.get());
+    }
+
+    std::any visitTernaryExpr(Ternary* expr) override
+    {
+        return parenthesize("?:", expr->condition.get(), expr->then_branch.get(), expr->else_branch.get());
+    }
+
+    std::any visitVariableExpr(Variable* expr ) override
+    {
+        return expr->name.lexeme;
     }
   };
 }

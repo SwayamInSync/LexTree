@@ -85,6 +85,10 @@ namespace lex
                 return "WHILE";
             case TokenType::EOF_TOKEN:
                 return "EOF";
+            case TokenType::QUESTION:
+                return "QUESTION";
+            case TokenType::COLON:
+                return "COLON";
             default:
                 return "UNKNOWN";
         }

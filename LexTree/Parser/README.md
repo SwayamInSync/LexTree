@@ -33,24 +33,39 @@ To eliminate ambiguity, we use a technique called *grammar stratification*. We r
 Here is our stratified, unambiguous grammar:
 
 ```
-expression     → equality ;
+expression     → comma ;
+comma          → conditional ( "," conditional )* ;
+conditional    → equality ( "?" expression ":" conditional )? ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" ) unary )* ;
 unary          → ( "!" | "-" ) unary
                | primary ;
-primary        → NUMBER | STRING | "true" | "false" | "nil"
+primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER
                | "(" expression ")" ;
 ```
 
-This grammar defines the following precedence levels (from lowest to highest):
-1. Equality (`==`, `!=`)
-2. Comparison (`>`, `>=`, `<`, `<=`)
-3. Terms (addition and subtraction: `+`, `-`)
-4. Factors (multiplication and division: `*`, `/`)
-5. Unary operations (`-`, `!`)
-6. Primary expressions (literals and parenthesized expressions)
+### Precedence Levels (Lowest to Highest)
+
+1. Comma (`,`)
+2. Conditional (`?:`)
+3. Equality (`==`, `!=`)
+4. Comparison (`>`, `>=`, `<`, `<=`)
+5. Terms (addition and subtraction: `+`, `-`)
+6. Factors (multiplication and division: `*`, `/`)
+7. Unary operations (`-`, `!`)
+8. Primary expressions (literals, variables, and parenthesized expressions)
+
+### AST Expression Types
+
+Our AST now includes these expression types:
+1. Binary - for binary operators (arithmetic, comparison, etc.)
+2. Grouping - for parenthesized expressions
+3. Literal - for literal values (numbers, strings, booleans, nil)
+4. Unary - for unary operators (negation, logical not)
+5. Ternary - for conditional expressions (? :)
+6. Variable - for variable references
 
 Each rule only matches expressions at its precedence level or higher, ensuring that higher precedence operations bind more tightly.
 
