@@ -6,3 +6,4 @@
 
 - [Lexer](LexTree/Lexer)
 - [Parser](LexTree/Parser)
+- [Interpreter](LexTree/Interpreter)

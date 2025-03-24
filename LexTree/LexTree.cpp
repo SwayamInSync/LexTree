@@ -2,6 +2,8 @@
 #include "Lexer/Lexer.h"
 #include "Parser/parser.h"
 #include "../utility/ASTPrinter.h"
+#include "Interpreter/Interpreter.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -10,8 +12,10 @@
 namespace lex
 {
     bool LexTree::hadError = false;
+    bool LexTree::hadRuntimeError = false;
 
-    void LexTree::runFile(const std::string &path) {
+    void LexTree::runFile(const std::string &path)
+    {
         std::ifstream file(path);
         if (!file.is_open()) {
             std::cerr << "Could not open file: " << path << std::endl;
@@ -23,9 +27,11 @@ namespace lex
         run(buffer.str());
 
         if (hadError) exit(65);
+        if (hadRuntimeError) exit(70);
     }
 
-    void LexTree::runPrompt() {
+    void LexTree::runPrompt()
+    {
         std::string line;
 
         while (true) {
@@ -36,7 +42,8 @@ namespace lex
             }
 
             run(line);
-            hadError = false; // to avoid killing complete session
+            hadError = false;
+            hadRuntimeError = false;
         }
     }
 
@@ -52,13 +59,29 @@ namespace lex
 
         if (hadError)
             return;
+
+        // Print AST structure
         ASTPrinter printer;
         std::cout << printer.print(expression.get()) << std::endl;
 
+        // Interpret the expression
+        Interpreter interpreter;
+        Value result = interpreter.interpret(expression);
+
+        // Only print the result if there was no runtime error
+        if (!hadRuntimeError) {
+            std::cout << "Result: " << value_to_string(result) << std::endl;
+        }
     }
 
     void LexTree::error(int line, const std::string &message) {
         report(line, "", message);
+    }
+
+    void LexTree::runtimeError(const RuntimeError& error)
+    {
+        std::cerr << error.what() << "\n[line " << error.token.line << "]" << std::endl;
+        hadRuntimeError = true;
     }
 
     void LexTree::report(int line, const std::string &where,
