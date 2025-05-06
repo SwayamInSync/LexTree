@@ -3,17 +3,16 @@
 
 namespace lex
 {
-    Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens) {}
-    ExprPtr Parser::parse()
+    Parser::Parser(const std::vector<Token> &tokens) : tokens(tokens) {}
+    std::vector<StmtPtr> Parser::parse()
     {
-        try
+        std::vector<StmtPtr> statements;
+        while (!is_at_end())
         {
-            return expression();
+            statements.push_back(statement());
         }
-        catch (const ParseError&)
-        {
-            return nullptr;
-        }
+
+        return statements;
     }
     Token Parser::peek() const
     {
@@ -21,7 +20,7 @@ namespace lex
     }
     Token Parser::previous() const
     {
-        return tokens[current-1];
+        return tokens[current - 1];
     }
 
     bool Parser::is_at_end() const
@@ -32,24 +31,24 @@ namespace lex
 
     Token Parser::advance()
     {
-        if(!is_at_end())
+        if (!is_at_end())
             ++current;
         return previous();
     }
     bool Parser::match(TokenType type)
     {
-        if(check(type))
+        if (check(type))
         {
-            advance();
+            advance(); // Consume the token and move to the next one
             return true;
         }
         return false;
     }
     bool Parser::match(std::initializer_list<TokenType> types)
     {
-        for(TokenType type: types)
+        for (TokenType type : types)
         {
-            if(check(type))
+            if (check(type))
             {
                 advance();
                 return true;
@@ -61,7 +60,7 @@ namespace lex
 
     bool Parser::check(TokenType type)
     {
-        if(is_at_end())
+        if (is_at_end())
             return false;
         return peek().type == type;
     }
@@ -74,7 +73,7 @@ namespace lex
 
     Token Parser::consume(lex::TokenType type, const std::string &message)
     {
-        if(check(type))
+        if (check(type))
             return advance();
 
         throw error(peek(), message);
@@ -83,27 +82,53 @@ namespace lex
     void Parser::synchronize()
     {
         advance();
-        while(!is_at_end())
+        while (!is_at_end())
         {
-            if(previous().type == TokenType::SEMICOLON)
+            if (previous().type == TokenType::SEMICOLON)
                 return;
 
             switch (peek().type)
             {
-                case TokenType::CLASS:
-                case TokenType::FUN:
-                case TokenType::VAR:
-                case TokenType::FOR:
-                case TokenType::IF:
-                case TokenType::WHILE:
-                case TokenType::PRINT:
-                case TokenType::RETURN:
-                    return;
-                default:
-                    break;
+            case TokenType::CLASS:
+            case TokenType::FUN:
+            case TokenType::VAR:
+            case TokenType::FOR:
+            case TokenType::IF:
+            case TokenType::WHILE:
+            case TokenType::PRINT:
+            case TokenType::RETURN:
+                return;
+            default:
+                break;
             }
             advance();
         }
+    }
+
+    StmtPtr Parser::statement()
+    {
+        // statement -> print_statement | expression_statement
+        if (match(TokenType::PRINT))
+            return print_statement();
+
+        return expression_statement();
+    }
+
+    StmtPtr Parser::print_statement()
+    {
+        // print_statement -> "print" expression ";"
+
+        ExprPtr value = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after value.");
+        return make_PrintStmt(value);
+    }
+
+    StmtPtr Parser::expression_statement()
+    {
+        // expression_statement -> expression ";"
+        ExprPtr expr = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+        return make_ExpressionStmt(expr);
     }
 
     ExprPtr Parser::expression()
@@ -130,7 +155,6 @@ namespace lex
     ExprPtr Parser::conditional()
     {
         // conditional → equality ("?" expression ":" conditional)?
-
 
         // Check for conditional operator without left operand
         if (check(TokenType::QUESTION))
@@ -161,7 +185,7 @@ namespace lex
         // equality → comparison ( ( "!=" | "==" ) comparison )*
         ExprPtr expr = comparison();
 
-        while(match({TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL}))
+        while (match({TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL}))
         {
             Token op = previous();
             ExprPtr right = comparison();
@@ -169,7 +193,6 @@ namespace lex
         }
 
         return expr;
-
     }
 
     ExprPtr Parser::comparison()
@@ -177,8 +200,8 @@ namespace lex
         // comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
         ExprPtr expr = term();
 
-        while(match({TokenType::GREATER, TokenType::GREATER_EQUAL,
-                     TokenType::LESS, TokenType::LESS_EQUAL}))
+        while (match({TokenType::GREATER, TokenType::GREATER_EQUAL,
+                      TokenType::LESS, TokenType::LESS_EQUAL}))
         {
             Token op = previous();
             ExprPtr right = term();
@@ -193,7 +216,7 @@ namespace lex
         // term → factor ( ( "-" | "+" ) factor )*
         ExprPtr expr = factor();
 
-        while(match({TokenType::MINUS, TokenType::PLUS}))
+        while (match({TokenType::MINUS, TokenType::PLUS}))
         {
             Token op = previous();
             ExprPtr right = factor();
@@ -208,7 +231,7 @@ namespace lex
         // factor -> unary ( ( "/" | "*" ) unary )* ;
         ExprPtr expr = unary();
 
-        while(match({TokenType::SLASH, TokenType::STAR}))
+        while (match({TokenType::SLASH, TokenType::STAR}))
         {
             Token op = previous();
             ExprPtr right = unary();
@@ -221,7 +244,7 @@ namespace lex
     ExprPtr Parser::unary()
     {
         // unary → ( "!" | "-" ) unary | primary
-        if(match({TokenType::BANG, TokenType::MINUS}))
+        if (match({TokenType::BANG, TokenType::MINUS}))
         {
             Token op = previous();
             ExprPtr right = unary();

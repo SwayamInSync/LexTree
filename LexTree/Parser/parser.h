@@ -3,17 +3,17 @@
 #include "../Lexer/TokenType.h"
 #include "../Lexer/Token.h"
 #include "Expr.h"
+#include "Stmt.h"
 #include <vector>
 #include <string>
 #include <stdexcept>
 
-
 namespace lex
 {
-    class ParseError : public std:: runtime_error
+    class ParseError : public std::runtime_error
     {
     public:
-        explicit ParseError(const std::string& message) : std::runtime_error(message) {}
+        explicit ParseError(const std::string &message) : std::runtime_error(message) {}
     };
 
     class Parser
@@ -23,6 +23,9 @@ namespace lex
         int current = 0;
 
         // Production rules
+        StmtPtr statement();
+        StmtPtr print_statement();
+        StmtPtr expression_statement();
         ExprPtr expression();
         ExprPtr comma();
         ExprPtr conditional();
@@ -43,12 +46,12 @@ namespace lex
         bool check(TokenType type);
 
         // error handling
-        ParseError error(const Token& token, const std::string& message);
-        Token consume(TokenType type, const std::string & message);
+        ParseError error(const Token &token, const std::string &message);
+        Token consume(TokenType type, const std::string &message);
         void synchronize();
 
     public:
-        explicit Parser(const std::vector<Token> & tokens);
-        ExprPtr parse();
+        explicit Parser(const std::vector<Token> &tokens);
+        std::vector<StmtPtr> parse();
     };
 }

@@ -6,7 +6,7 @@
 namespace lex
 {
     // Convert value to string for printing
-    std::string value_to_string(const Value& value)
+    std::string value_to_string(const Value &value)
     {
         if (std::holds_alternative<std::monostate>(value))
         {
@@ -23,7 +23,8 @@ namespace lex
             if (text.find('.') != std::string::npos)
             {
                 text = text.substr(0, text.find_last_not_of('0') + 1);
-                if (text.back() == '.') text = text.substr(0, text.size() - 1);
+                if (text.back() == '.')
+                    text = text.substr(0, text.size() - 1);
             }
             return text;
         }
@@ -34,43 +35,63 @@ namespace lex
         return "unknown";
     }
 
-    void Interpreter::check_number_operand(const Token& operator_token, const Value& operand)
+    void Interpreter::check_number_operand(const Token &operator_token, const Value &operand)
     {
         if (std::holds_alternative<double>(operand))
             return;
         throw RuntimeError(operator_token, "Operand must be a number.");
     }
 
-    void Interpreter::check_number_operands(const Token& operator_token, const Value& left, const Value& right)
+    void Interpreter::check_number_operands(const Token &operator_token, const Value &left, const Value &right)
     {
         if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right))
             return;
         throw RuntimeError(operator_token, "Operands must be numbers.");
     }
 
-    Value Interpreter::interpret(const ExprPtr& expression)
+    void Interpreter::interpret(const std::vector<StmtPtr> &statements)
     {
         try
         {
-            Value value = evaluate(expression);
-            return value;
+            for (const auto &statement : statements)
+            {
+                execute(statement);
+            }
         }
-        catch (const RuntimeError& error)
+        catch (const RuntimeError &error)
         {
             LexTree::runtimeError(error);
-            return std::monostate{};
-        }
-        catch (const std::bad_any_cast& e) {
-            // This is more of an internal error, but we should still report it
-            std::cerr << "Internal error: " << e.what() << std::endl;
-            return std::monostate{};
         }
     }
 
-    Value Interpreter::evaluate(const ExprPtr& expression)
+    void Interpreter::execute(const StmtPtr &stmt)
+    {
+        stmt->accept(this);
+    }
+
+    Value Interpreter::evaluate(const ExprPtr &expression)
     {
         return std::any_cast<Value>(expression->accept(this));
     }
+
+    void Interpreter::visitExpressionStmt(ExpressionStmt *stmt)
+    {
+        evaluate(stmt->expression);
+        return;
+    }
+
+    void Interpreter::visitPrintStmt(PrintStmt *stmt)
+    {
+        Value value = evaluate(stmt->expression);
+        std::cout << value_to_string(value) << std::endl;
+        return;
+    }
+
+    std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
+    {
+        return evaluate(expr->expression);
+    }
+
     std::any Interpreter::visitLiteralExpr(lex::Literal *expr)
     {
         if (std::holds_alternative<std::monostate>(expr->value))
@@ -84,23 +105,19 @@ namespace lex
         return Value(std::monostate{});
     }
 
-    std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
-    {
-        return evaluate(expr->expression);
-    }
-
     std::any Interpreter::visitUnaryExpr(lex::Unary *expr)
     {
         Value right = evaluate(expr->right);
-        switch (expr->operator_token.type) {
-            case TokenType::BANG:
-                return Value(!is_truthy(right));
-            case TokenType::MINUS:
-                check_number_operand(expr->operator_token, right);
-                return Value(-std::get<double>(right));
-            default:
-                // Unreachable
-                return Value(std::monostate{});
+        switch (expr->operator_token.type)
+        {
+        case TokenType::BANG:
+            return Value(!is_truthy(right));
+        case TokenType::MINUS:
+            check_number_operand(expr->operator_token, right);
+            return Value(-std::get<double>(right));
+        default:
+            // Unreachable
+            return Value(std::monostate{});
         }
     }
 
@@ -109,68 +126,70 @@ namespace lex
         Value left = evaluate(expr->left);
         Value right = evaluate(expr->right);
 
-        switch (expr->operator_token.type) {
-            // Arithmetic operations
-            case TokenType::MINUS:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) - std::get<double>(right));
-            case TokenType::SLASH:
-                check_number_operands(expr->operator_token, left, right);
-                // Check for division by zero
-                if (std::get<double>(right) == 0.0) {
-                    throw RuntimeError(expr->operator_token, "Division by zero.");
-                }
-                return Value(std::get<double>(left) / std::get<double>(right));
-            case TokenType::STAR:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) * std::get<double>(right));
-            case TokenType::PLUS:
-                if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right))
-                    return Value(std::get<double>(left) + std::get<double>(right));
+        switch (expr->operator_token.type)
+        {
+        // Arithmetic operations
+        case TokenType::MINUS:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) - std::get<double>(right));
+        case TokenType::SLASH:
+            check_number_operands(expr->operator_token, left, right);
+            // Check for division by zero
+            if (std::get<double>(right) == 0.0)
+            {
+                throw RuntimeError(expr->operator_token, "Division by zero.");
+            }
+            return Value(std::get<double>(left) / std::get<double>(right));
+        case TokenType::STAR:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) * std::get<double>(right));
+        case TokenType::PLUS:
+            if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right))
+                return Value(std::get<double>(left) + std::get<double>(right));
 
-                if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
-                    return Value(std::get<std::string>(left) + std::get<std::string>(right));
+            if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
+                return Value(std::get<std::string>(left) + std::get<std::string>(right));
 
-                // Allow string concatenation with other types
-                if (std::holds_alternative<std::string>(left))
-                    return Value(std::get<std::string>(left) + value_to_string(right));
+            // Allow string concatenation with other types
+            if (std::holds_alternative<std::string>(left))
+                return Value(std::get<std::string>(left) + value_to_string(right));
 
-                if (std::holds_alternative<std::string>(right))
-                    return Value(value_to_string(left) + std::get<std::string>(right));
+            if (std::holds_alternative<std::string>(right))
+                return Value(value_to_string(left) + std::get<std::string>(right));
 
-                throw RuntimeError(expr->operator_token,
-                                   "Operands must be two numbers or two strings.");
-                // Comparison operations
-            case TokenType::GREATER:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) > std::get<double>(right));
-            case TokenType::GREATER_EQUAL:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) >= std::get<double>(right));
-            case TokenType::LESS:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) < std::get<double>(right));
-            case TokenType::LESS_EQUAL:
-                check_number_operands(expr->operator_token, left, right);
-                return Value(std::get<double>(left) <= std::get<double>(right));
+            throw RuntimeError(expr->operator_token,
+                               "Operands must be two numbers or two strings.");
+            // Comparison operations
+        case TokenType::GREATER:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) > std::get<double>(right));
+        case TokenType::GREATER_EQUAL:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) >= std::get<double>(right));
+        case TokenType::LESS:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) < std::get<double>(right));
+        case TokenType::LESS_EQUAL:
+            check_number_operands(expr->operator_token, left, right);
+            return Value(std::get<double>(left) <= std::get<double>(right));
 
-                // Equality operations
-            case TokenType::BANG_EQUAL:
-                return Value(!values_equal(left, right));
-            case TokenType::EQUAL_EQUAL:
-                return Value(values_equal(left, right));
+            // Equality operations
+        case TokenType::BANG_EQUAL:
+            return Value(!values_equal(left, right));
+        case TokenType::EQUAL_EQUAL:
+            return Value(values_equal(left, right));
 
-            case TokenType::COMMA:
-                // Comma operator returns the value of the right-hand operand
-                return Value(right);
+        case TokenType::COMMA:
+            // Comma operator returns the value of the right-hand operand
+            return Value(right);
 
-            default:
-                // Unreachable
-                return Value(std::monostate{});
+        default:
+            // Unreachable
+            return Value(std::monostate{});
         }
     }
 
-    std::any Interpreter::visitTernaryExpr(Ternary* expr)
+    std::any Interpreter::visitTernaryExpr(Ternary *expr)
     {
         Value condition = evaluate(expr->condition);
         if (is_truthy(condition))
@@ -178,7 +197,7 @@ namespace lex
         return evaluate(expr->else_branch);
     }
 
-    std::any Interpreter::visitVariableExpr(Variable* expr)
+    std::any Interpreter::visitVariableExpr(Variable *expr)
     {
         // We'll implement this when we add variables and environment
         throw RuntimeError(expr->name, "Variables not yet implemented.");
