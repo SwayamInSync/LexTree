@@ -1,5 +1,8 @@
 # Statements Grammar for Lex Language
-program        → statement* EOF ;
+program        → declaration* EOF ;
+
+declaration    → variable_declaration
+               | statement ;
 
 statement      → exprStmt 
                | printStmt ;
@@ -17,5 +20,4 @@ term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" ) unary )* ;
 unary          → ( "!" | "-" ) unary
                | primary ;
-primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER
-               | "(" expression ")" ;
+primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER | "(" expression ")" ;

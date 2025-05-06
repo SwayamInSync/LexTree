@@ -32,6 +32,7 @@ namespace lex
         // Visit methods from StmtVisitor
         void visitExpressionStmt(ExpressionStmt *stmt) override;
         void visitPrintStmt(PrintStmt *stmt) override;
+        void visitVariableStmt(VariableStmt *stmt) override;
 
     private:
         // Helper methods for evaluation

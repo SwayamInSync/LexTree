@@ -87,6 +87,12 @@ namespace lex
         return;
     }
 
+    void Interpreter::visitVariableStmt(VariableStmt *stmt)
+    {
+        // We'll implement this when we add variables and environment
+        throw RuntimeError(stmt->name, "Variables not yet implemented.");
+    }
+
     std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
     {
         return evaluate(expr->expression);
