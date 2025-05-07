@@ -23,6 +23,8 @@ namespace lex
         int current = 0;
 
         // Production rules
+        StmtPtr declaration();
+        StmtPtr variable_declaration();
         StmtPtr statement();
         StmtPtr print_statement();
         StmtPtr expression_statement();

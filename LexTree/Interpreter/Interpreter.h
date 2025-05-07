@@ -1,6 +1,7 @@
 #pragma once
 #include "../Parser/Expr.h"
 #include "../Parser/Stmt.h"
+#include "../Parser/Environment.h"
 #include "Value.h"
 #include <vector>
 #include <stdexcept>
@@ -35,6 +36,8 @@ namespace lex
         void visitVariableStmt(VariableStmt *stmt) override;
 
     private:
+        Environment environment;
+
         // Helper methods for evaluation
         void execute(const StmtPtr &stmt);
         Value evaluate(const ExprPtr &expr);

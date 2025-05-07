@@ -14,6 +14,7 @@ add_executable(LexTree
         LexTree/Lexer/Lexer.h
         LexTree/Parser/parser.cpp
         LexTree/Parser/parser.h
+        LexTree/Parser/Environment.h
         LexTree/Interpreter/Interpreter.cpp
         LexTree/Interpreter/Interpreter.h
 )

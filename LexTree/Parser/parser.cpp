@@ -9,7 +9,7 @@ namespace lex
         std::vector<StmtPtr> statements;
         while (!is_at_end())
         {
-            statements.push_back(statement());
+            statements.push_back(declaration());
         }
 
         return statements;
@@ -103,6 +103,36 @@ namespace lex
             }
             advance();
         }
+    }
+
+    StmtPtr Parser::declaration()
+    {
+        // declaration -> print_statement | expression_statement | variable_declaration
+        try
+        {
+            if (match(TokenType::VAR))
+                return variable_declaration();
+            return statement();
+        }
+        catch (const ParseError &)
+        {
+            synchronize();
+            return nullptr;
+        }
+    }
+
+    StmtPtr Parser::variable_declaration()
+    {
+        // variable_declaration -> "var" IDENTIFIER ( "=" expression )? ";"
+        Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+        ExprPtr initializer = nullptr;
+
+        if (match(TokenType::EQUAL))
+        {
+            initializer = expression();
+        }
+        consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+        return make_VariableStmt(name, initializer);
     }
 
     StmtPtr Parser::statement()
@@ -278,7 +308,7 @@ namespace lex
 
         if (match(TokenType::IDENTIFIER))
         {
-            // Until you have a Variable class, use a Literal with string value as a workaround
+
             return make_Variable(previous());
         }
 
