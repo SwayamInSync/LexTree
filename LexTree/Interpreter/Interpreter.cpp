@@ -51,17 +51,16 @@ namespace lex
 
     void Interpreter::interpret(const std::vector<StmtPtr> &statements)
     {
-        for(const auto &statement : statements)
+        for (const auto &statement : statements)
         {
-          try
-          {
-            execute(statement);
-          }
-          catch(const RuntimeError &error)
-          {
-            LexTree::runtimeError(error);
-          }
-          
+            try
+            {
+                execute(statement);
+            }
+            catch (const RuntimeError &error)
+            {
+                LexTree::runtimeError(error);
+            }
         }
     }
 
@@ -72,24 +71,23 @@ namespace lex
 
     void Interpreter::executeBlock(const std::vector<StmtPtr> &statements, std::shared_ptr<Environment> environment)
     {
-      std::shared_ptr<Environment> previous = this->environment;
-      try
-      {
-        this->environment = environment;
-        // execute each statement in the block in the new environment
-        for (const auto &statement : statements)
+        std::shared_ptr<Environment> previous = this->environment;
+        try
         {
-          execute(statement);
+            this->environment = environment;
+            // execute each statement in the block in the new environment
+            for (const auto &statement : statements)
+            {
+                execute(statement);
+            }
         }
-      }
-      catch(const std::exception& e)
-      {
-        this->environment = previous; // restore the previous environment
-        throw; // rethrow the exception
-      }
+        catch (const std::exception &e)
+        {
+            this->environment = previous; // restore the previous environment
+            throw;                        // rethrow the exception
+        }
 
-      this->environment = previous; // restore the previous environment
-      
+        this->environment = previous; // restore the previous environment
     }
 
     Value Interpreter::evaluate(const ExprPtr &expression)
@@ -113,7 +111,7 @@ namespace lex
     void Interpreter::visitVariableStmt(VariableStmt *stmt)
     {
         Value value;
-        if(stmt->initializer != nullptr)
+        if (stmt->initializer != nullptr)
         {
             value = evaluate(stmt->initializer);
         }
@@ -121,12 +119,12 @@ namespace lex
         environment->define(stmt->name.lexeme, value);
     }
 
-    void Interpreter::visitBlockStmt(BlockStmt* stmt)
+    void Interpreter::visitBlockStmt(BlockStmt *stmt)
     {
-      std::shared_ptr<Environment> block_environment = std::make_shared<Environment>(environment); // create a new env with the current environment as enclosing
-      executeBlock(stmt->statements, block_environment);
-      // block_environment will be destroyed when it goes out of scope
-      // no need to restore the environment here, as it will be done automatically
+        std::shared_ptr<Environment> block_environment = std::make_shared<Environment>(environment); // create a new env with the current environment as enclosing
+        executeBlock(stmt->statements, block_environment);
+        // block_environment will be destroyed when it goes out of scope
+        // no need to restore the environment here, as it will be done automatically
     }
 
     // Expressions returns the evaluated value
@@ -243,7 +241,12 @@ namespace lex
 
     std::any Interpreter::visitVariableExpr(Variable *expr)
     {
-        return environment->get(expr->name); // this just retrieves the value from the environment
+        Value value = environment->get(expr->name); // this just retrieves the value from the environment
+        if (std::holds_alternative<std::monostate>(value))
+        {
+            throw RuntimeError(expr->name, "Uninitialized variable: " + expr->name.lexeme);
+        }
+        return value;
     }
 
     std::any Interpreter::visitAssignExpr(Assign *expr)
