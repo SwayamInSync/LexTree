@@ -1,9 +1,19 @@
-var a = 1;
-var b = 2;
-var c = 3;
-
-print a + b - c;
-
-a = 10;
-
-print a + b * c;
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;

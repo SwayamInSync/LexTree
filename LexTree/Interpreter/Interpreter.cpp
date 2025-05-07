@@ -69,6 +69,28 @@ namespace lex
         stmt->accept(this);
     }
 
+    void Interpreter::executeBlock(const std::vector<StmtPtr> &statements, std::shared_ptr<Environment> environment)
+    {
+      std::shared_ptr<Environment> previous = this->environment;
+      try
+      {
+        this->environment = environment;
+        // execute each statement in the block
+        for (const auto &statement : statements)
+        {
+          execute(statement);
+        }
+      }
+      catch(const std::exception& e)
+      {
+        this->environment = previous; // restore the previous environment
+        throw; // rethrow the exception
+      }
+
+      this->environment = previous; // restore the previous environment
+      
+    }
+
     Value Interpreter::evaluate(const ExprPtr &expression)
     {
         return std::any_cast<Value>(expression->accept(this));
@@ -95,7 +117,12 @@ namespace lex
             value = evaluate(stmt->initializer);
         }
 
-        environment.define(stmt->name.lexeme, value);
+        environment->define(stmt->name.lexeme, value);
+    }
+
+    void Interpreter::visitBlockStmt(BlockStmt* stmt)
+    {
+      executeBlock(stmt->statements, std::make_shared<Environment>(std::make_shared<Environment>(environment)));
     }
 
     // Expressions returns the evaluated value
@@ -212,13 +239,13 @@ namespace lex
 
     std::any Interpreter::visitVariableExpr(Variable *expr)
     {
-        return environment.get(expr->name); // this just retrieves the value from the environment
+        return environment->get(expr->name); // this just retrieves the value from the environment
     }
 
     std::any Interpreter::visitAssignExpr(Assign *expr)
     {
         Value value = evaluate(expr->value);
-        environment.assign(expr->name, value);
+        environment->assign(expr->name, value);
         return value;
     }
 }
