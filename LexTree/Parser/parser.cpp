@@ -9,7 +9,11 @@ namespace lex
         std::vector<StmtPtr> statements;
         while (!is_at_end())
         {
-            statements.push_back(declaration());
+            auto stmt = declaration();
+            if (stmt != nullptr)
+            {
+                statements.push_back(stmt);
+            }
         }
 
         return statements;
