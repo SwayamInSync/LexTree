@@ -122,7 +122,7 @@ namespace lex
 
     void Interpreter::visitBlockStmt(BlockStmt* stmt)
     {
-      executeBlock(stmt->statements, std::make_shared<Environment>(std::make_shared<Environment>(environment)));
+      executeBlock(stmt->statements, std::make_shared<Environment>(environment));
     }
 
     // Expressions returns the evaluated value
