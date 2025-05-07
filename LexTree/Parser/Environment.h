@@ -2,6 +2,7 @@
 
 #include <map>
 #include <any>
+#include "../Interpreter/Value.h"
 #include "../Lexer/Token.h"
 
 namespace lex
@@ -9,21 +10,33 @@ namespace lex
     class Environment
     {
     private:
-        std::map<std::string, std::any> values;
+        std::map<std::string, Value> values;
 
     public:
-        void define(const std::string &name, const std::any &value)
+        void define(const std::string &name, const Value &value)
         {
             values[name] = value;
         }
 
-        std::any get(Token name)
+        Value get(Token name)
         {
             if (values.find(name.lexeme) != values.end())
             {
                 return values[name.lexeme];
             }
             throw std::runtime_error("Undefined variable: " + name.lexeme);
+        }
+
+        void assign(Token name, const Value &value)
+        {
+          if(values.find(name.lexeme) != values.end())
+          {
+            values[name.lexeme] = value;
+          }
+          else
+          {
+            throw std::runtime_error("Undefined variable: " + name.lexeme);
+          }
         }
     };
 }

@@ -29,6 +29,7 @@ namespace lex
         std::any visitUnaryExpr(Unary *expr) override;
         std::any visitTernaryExpr(Ternary *expr) override;
         std::any visitVariableExpr(Variable *expr) override;
+        std::any visitAssignExpr(Assign *expr) override;
 
         // Visit methods from StmtVisitor
         void visitExpressionStmt(ExpressionStmt *stmt) override;
@@ -36,7 +37,7 @@ namespace lex
         void visitVariableStmt(VariableStmt *stmt) override;
 
     private:
-        Environment environment;
+        Environment environment; // for global, stay in memory at interpreter level
 
         // Helper methods for evaluation
         void execute(const StmtPtr &stmt);

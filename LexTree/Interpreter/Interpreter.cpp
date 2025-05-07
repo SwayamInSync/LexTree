@@ -89,9 +89,16 @@ namespace lex
 
     void Interpreter::visitVariableStmt(VariableStmt *stmt)
     {
-        // We'll implement this when we add variables and environment
-        throw RuntimeError(stmt->name, "Variables not yet implemented.");
+        Value value;
+        if(stmt->initializer != nullptr)
+        {
+            value = evaluate(stmt->initializer);
+        }
+
+        environment.define(stmt->name.lexeme, value);
     }
+
+    // Expressions returns the evaluated value
 
     std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
     {
@@ -205,7 +212,13 @@ namespace lex
 
     std::any Interpreter::visitVariableExpr(Variable *expr)
     {
-        // We'll implement this when we add variables and environment
-        throw RuntimeError(expr->name, "Variables not yet implemented.");
+        return environment.get(expr->name); // this just retrieves the value from the environment
+    }
+
+    std::any Interpreter::visitAssignExpr(Assign *expr)
+    {
+        Value value = evaluate(expr->value);
+        environment.assign(expr->name, value);
+        return value;
     }
 }

@@ -1,23 +1,63 @@
-# Statements Grammar for Lex Language
+# Lex Language Grammar
+
+# Program Structure
 program        → declaration* EOF ;
 
+# Declarations
 declaration    → variable_declaration
+               | function_declaration
                | statement ;
 
-statement      → exprStmt 
-               | printStmt ;
+variable_declaration → "var" IDENTIFIER ( "=" expression )? ";" ;
+function_declaration → "fun" IDENTIFIER "(" parameters? ")" block ;
+parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 
-exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ;
+# Statements
+statement      → expr_stmt
+               | print_stmt
+               | block_stmt
+               | if_stmt
+               | while_stmt
+               | for_stmt
+               | return_stmt ;
 
-# Expressions Grammar for Lex Language
-expression     → comma ;
+expr_stmt      → expression ";" ;
+print_stmt     → "print" expression ";" ;
+block_stmt     → "{" declaration* "}" ;
+if_stmt        → "if" "(" expression ")" statement ( "else" statement )? ;
+while_stmt     → "while" "(" expression ")" statement ;
+for_stmt       → "for" "(" ( variable_declaration | expr_stmt | ";" )
+                         expression? ";"
+                         expression? ")" statement ;
+return_stmt    → "return" expression? ";" ;
+
+# Expressions
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | comma ;
 comma          → conditional ( "," conditional )* ;
-conditional    → equality ( "?" expression ":" conditional )? ;
+conditional    → logic_or ( "?" expression ":" conditional )? ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → equality ( "and" equality )* ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → unary ( ( "/" | "*" ) unary )* ;
+factor         → unary ( ( "/" | "*" | "%" ) unary )* ;
 unary          → ( "!" | "-" ) unary
-               | primary ;
-primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER | "(" expression ")" ;
+               | call ;
+call           → primary ( "(" arguments? ")" )* ;
+arguments      → expression ( "," expression )* ;
+primary        → NUMBER | STRING | "true" | "false" | "nil"
+               | IDENTIFIER | "(" expression ")"
+               | "super" "." IDENTIFIER ;
+
+# Lexical Grammar
+NUMBER         → DIGIT+ ( "." DIGIT+ )? ;
+STRING         → "\"" <any char except "\"">* "\"" ;
+IDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ;
+ALPHA          → "a" ... "z" | "A" ... "Z" | "_" ;
+DIGIT          → "0" ... "9" ;
+
+# Comments
+COMMENT        → "//" <any char except newline>* newline
+               | "/*" <any char except "*/"> "*/" ;

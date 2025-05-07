@@ -167,8 +167,36 @@ namespace lex
 
     ExprPtr Parser::expression()
     {
-        // expression -> comma
-        return comma();
+        // expression -> assignment
+        return assignment();
+    }
+
+    ExprPtr Parser::assignment()
+    {
+      // assignment -> IDENTIFIER "=" expression
+      // issue we don't have a way to check if the identifier is valid (L-value, R-value)
+      // trick
+
+      ExprPtr expr = comma();
+
+      // Check if the next token is an assignment
+      if (match(TokenType::EQUAL))
+      {
+        Token equals = previous();
+        ExprPtr value = assignment(); // Recursive call to parse the right-hand side
+
+        // Check if the left-hand side is a variable
+        if(auto varExpr = std::dynamic_pointer_cast<Variable>(expr))
+        {
+          Token name = varExpr->name;
+          return make_Assign(name, value);
+        }
+
+        // If it's not a variable, throw an error
+        throw error(equals, "Invalid assignment target.");
+      }
+
+      return expr;
     }
 
     ExprPtr Parser::comma()

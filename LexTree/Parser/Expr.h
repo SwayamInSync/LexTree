@@ -21,6 +21,7 @@ namespace lex
         virtual std::any visitUnaryExpr(class Unary *expr) = 0;
         virtual std::any visitTernaryExpr(class Ternary *expr) = 0;
         virtual std::any visitVariableExpr(class Variable *expr) = 0;
+        virtual std::any visitAssignExpr(class Assign* expr) = 0;
     };
 
     // Base Expression class
@@ -131,6 +132,23 @@ namespace lex
         }
     };
 
+    class Assign : public Expr
+    {
+      public:
+        const Token name;
+        const ExprPtr value;
+
+        Assign(Token name, ExprPtr value)
+            : name(std::move(name)), value(std::move(value))
+        {
+        }
+
+        std::any accept(ExprVisitor *visitor) override
+        {
+            return visitor->visitAssignExpr(this);
+        }
+    };
+
     // helper functions to create shared pointers for each expression type
 
     inline ExprPtr make_Binary(ExprPtr left, Token operator_token, ExprPtr right)
@@ -161,5 +179,10 @@ namespace lex
     inline ExprPtr make_Variable(Token name)
     {
         return std::make_shared<Variable>(std::move(name));
+    }
+
+    inline ExprPtr make_Assign(Token name, ExprPtr value)
+    {
+        return std::make_shared<Assign>(std::move(name), std::move(value));
     }
 }
