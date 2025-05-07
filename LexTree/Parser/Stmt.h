@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+#include <memory>
 #include "Expr.h"
 
 namespace lex
@@ -12,9 +14,11 @@ namespace lex
     public:
         virtual ~StmtVisitor() = default;
 
+        // statements themselves don't have any precedence ordering
         virtual void visitExpressionStmt(class ExpressionStmt *stmt) = 0;   // Expression statement
         virtual void visitPrintStmt(class PrintStmt *stmt) = 0;      // Print statement
         virtual void visitVariableStmt(class VariableStmt *stmt) = 0; // Variable declaration statement
+        virtual void visitBlockStmt(class BlockStmt * stmt) = 0;      // Block statement
     };
 
     // Base Statement class
@@ -75,6 +79,22 @@ namespace lex
         }
     };
 
+    class BlockStmt : public Stmt
+    {
+    public:
+        const std::vector<StmtPtr> statements;
+
+        explicit BlockStmt(std::vector<StmtPtr> statements)
+            : statements(std::move(statements))
+        {
+        }
+
+        void accept(StmtVisitor *visitor) override
+        {
+            visitor->visitBlockStmt(this);
+        }
+    };
+
     // helper functions to create shared pointers for each statement type
     inline StmtPtr make_ExpressionStmt(ExprPtr expression)
     {
@@ -87,5 +107,10 @@ namespace lex
     inline StmtPtr make_VariableStmt(Token name, ExprPtr initializer)
     {
         return std::make_shared<VariableStmt>(std::move(name), std::move(initializer));
+    }
+
+    inline StmtPtr make_BlockStmt(std::vector<StmtPtr> statements)
+    {
+        return std::make_shared<BlockStmt>(std::move(statements));
     }
 }

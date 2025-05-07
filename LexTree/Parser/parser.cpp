@@ -144,9 +144,26 @@ namespace lex
         // statement -> print_statement | expression_statement
         if (match(TokenType::PRINT))
             return print_statement();
+        if (match(TokenType::LEFT_BRACE))
+            return make_BlockStmt(this->block()); // wrapping in make_BlockStmt because block() returns a list of statements, which are not a node of AST
 
         return expression_statement();
     }
+
+    std::vector<StmtPtr> Parser::block() 
+    {
+      std::vector<StmtPtr> statements;
+  
+      while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
+          auto stmt = declaration();
+          if (stmt != nullptr) {
+              statements.push_back(stmt);
+          }
+      }
+  
+      consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+      return statements;
+  }
 
     StmtPtr Parser::print_statement()
     {
