@@ -1,9 +1,23 @@
-# Expression AST definitions for Lex language
-# Format: ClassName : Type1 field1, Type2 field2, ...
+# Statements Grammar for Lex Language
+program        → declaration* EOF ;
+declaration    → variable_declaration
+               | statement ;
+variable_declaration → "var" IDENTIFIER ( "=" expression )? ";" ;
+statement      → exprStmt 
+               | printStmt ;
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
 
-Binary   : ExprPtr left, Token operator_token, ExprPtr right
-Grouping : ExprPtr expression
-Literal  : LiteralValue value
-Unary    : Token operator_token, ExprPtr right
-Ternary  : ExprPtr condition, ExprPtr then_branch, ExprPtr else_branch
-Variable : Token name
+# Expressions Grammar for Lex Language
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | comma ;
+comma          → conditional ( "," conditional )* ;
+conditional    → equality ( "?" expression ":" conditional )? ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               | primary ;
+primary        → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER | "(" expression ")" ;
