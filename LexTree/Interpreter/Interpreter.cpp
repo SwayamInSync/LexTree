@@ -51,16 +51,17 @@ namespace lex
 
     void Interpreter::interpret(const std::vector<StmtPtr> &statements)
     {
-        try
+        for(const auto &statement : statements)
         {
-            for (const auto &statement : statements)
-            {
-                execute(statement);
-            }
-        }
-        catch (const RuntimeError &error)
-        {
+          try
+          {
+            execute(statement);
+          }
+          catch(const RuntimeError &error)
+          {
             LexTree::runtimeError(error);
+          }
+          
         }
     }
 
@@ -75,7 +76,7 @@ namespace lex
       try
       {
         this->environment = environment;
-        // execute each statement in the block
+        // execute each statement in the block in the new environment
         for (const auto &statement : statements)
         {
           execute(statement);
@@ -122,7 +123,10 @@ namespace lex
 
     void Interpreter::visitBlockStmt(BlockStmt* stmt)
     {
-      executeBlock(stmt->statements, std::make_shared<Environment>(environment));
+      std::shared_ptr<Environment> block_environment = std::make_shared<Environment>(environment); // create a new env with the current environment as enclosing
+      executeBlock(stmt->statements, block_environment);
+      // block_environment will be destroyed when it goes out of scope
+      // no need to restore the environment here, as it will be done automatically
     }
 
     // Expressions returns the evaluated value

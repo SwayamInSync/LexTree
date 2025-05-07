@@ -10,6 +10,7 @@ namespace lex
     public:
         static bool hadError;
         static bool hadRuntimeError;
+        static Interpreter interpreter;
 
         static void report(int line, const std::string &where,
                            const std::string &message);

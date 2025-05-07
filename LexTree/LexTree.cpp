@@ -13,6 +13,7 @@ namespace lex
 {
     bool LexTree::hadError = false;
     bool LexTree::hadRuntimeError = false;
+    Interpreter LexTree::interpreter;
 
     void LexTree::runFile(const std::string &path)
     {
@@ -71,7 +72,6 @@ namespace lex
         // std::cout << printer.print(expression.get()) << std::endl;
 
         // Interpret the expression
-        Interpreter interpreter;
         interpreter.interpret(statements);
 
         // Only print the result if there was no runtime error

@@ -4,6 +4,7 @@
 #include <any>
 #include "../Interpreter/Value.h"
 #include "../Lexer/Token.h"
+#include "../Error_Handling/RunTimeError.h"
 #include <stdexcept>
 
 namespace lex
@@ -11,12 +12,12 @@ namespace lex
     class Environment
     {
     private:
-        std::shared_ptr<Environment> enclosing;
+        std::shared_ptr<Environment> parent;
         std::map<std::string, Value> values;
 
     public:
-        Environment() : enclosing(nullptr) {} // default for global scope
-        Environment(std::shared_ptr<Environment> enclosing) : enclosing(std::move(enclosing)) {} // for local scopes
+        Environment() : parent(nullptr) {} // default for global scope
+        Environment(std::shared_ptr<Environment> parent) : parent(std::move(parent)) {} // for local scopes
         void define(const std::string &name, const Value &value)
         {
             values[name] = value;
@@ -29,12 +30,13 @@ namespace lex
             {
                 return it->second;
             }
-            // check in enclosing environment
-            if(enclosing)
+            // check in parent environment
+            if(parent)
             {
-                return enclosing->get(name);
+                return parent->get(name); // recursively get from parent environment
             }
-            throw std::runtime_error("Undefined variable: " + name.lexeme);
+            
+            throw RuntimeError(name, "Undefined variable: " + name.lexeme);
         }
 
         void assign(Token name, const Value &value)
@@ -44,14 +46,14 @@ namespace lex
             values[name.lexeme] = value;
             return;
           }
-          if (enclosing != nullptr)
+          if (parent != nullptr)
           {
-              enclosing->assign(name, value);
+              parent->assign(name, value); // recursively assign in parent environment
               return;
           }
           else
           {
-            throw std::runtime_error("Undefined variable: " + name.lexeme);
+            throw RuntimeError(name, "Undefined variable: " + name.lexeme);
           }
         }
     };
