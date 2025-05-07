@@ -19,4 +19,5 @@ add_executable(LexTree
         LexTree/Interpreter/Interpreter.cpp
         LexTree/Interpreter/Interpreter.h
         LexTree/Interpreter/Value.h
+        LexTree/Error_Handling/RunTimeError.h
 )

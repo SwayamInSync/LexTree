@@ -14,6 +14,13 @@ var c = "global c";
   print b;
   print c;
 }
+{
+  {
+    {
+      z = 10;
+    }
+  }
+}
 print a;
 print b;
 print c;

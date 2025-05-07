@@ -2,21 +2,13 @@
 #include "../Parser/Expr.h"
 #include "../Parser/Stmt.h"
 #include "../Parser/Environment.h"
+#include "../Error_Handling/RunTimeError.h"
 #include "Value.h"
 #include <vector>
 #include <stdexcept>
 
 namespace lex
 {
-    class RuntimeError : public std::runtime_error
-    {
-    public:
-        const Token token;
-
-        RuntimeError(const Token &token, const std::string &message)
-            : std::runtime_error(message), token(token) {}
-    };
-
     class Interpreter : public ExprVisitor, public StmtVisitor
     {
     public:
