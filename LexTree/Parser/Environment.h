@@ -20,9 +20,10 @@ namespace lex
 
         Value get(Token name)
         {
-            if (values.find(name.lexeme) != values.end())
+            auto it = values.find(name.lexeme);
+            if (it != values.end())
             {
-                return values[name.lexeme];
+                return it->second;
             }
             throw std::runtime_error("Undefined variable: " + name.lexeme);
         }
