@@ -174,8 +174,6 @@ namespace lex
     ExprPtr Parser::assignment()
     {
       // assignment -> IDENTIFIER "=" expression
-      // issue we don't have a way to check if the identifier is valid (L-value, R-value)
-      // trick
 
       ExprPtr expr = comma();
 
