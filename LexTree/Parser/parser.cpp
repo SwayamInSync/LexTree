@@ -141,7 +141,9 @@ namespace lex
 
     StmtPtr Parser::statement()
     {
-        // statement -> print_statement | expression_statement
+        // statement -> print_statement | expression_statement | if_statement | block
+        if (match(TokenType::IF))
+            return if_statement();
         if (match(TokenType::PRINT))
             return print_statement();
         if (match(TokenType::LEFT_BRACE))
@@ -150,20 +152,22 @@ namespace lex
         return expression_statement();
     }
 
-    std::vector<StmtPtr> Parser::block() 
+    std::vector<StmtPtr> Parser::block()
     {
-      std::vector<StmtPtr> statements;
-  
-      while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
-          auto stmt = declaration();
-          if (stmt != nullptr) {
-              statements.push_back(stmt);
-          }
-      }
-  
-      consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
-      return statements;
-  }
+        std::vector<StmtPtr> statements;
+
+        while (!check(TokenType::RIGHT_BRACE) && !is_at_end())
+        {
+            auto stmt = declaration();
+            if (stmt != nullptr)
+            {
+                statements.push_back(stmt);
+            }
+        }
+
+        consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
 
     StmtPtr Parser::print_statement()
     {
@@ -182,6 +186,11 @@ namespace lex
         return make_ExpressionStmt(expr);
     }
 
+    StmtPtr Parser::if_statement()
+    {
+        // if_statement -> "if" "(" expression ")" statement ( "else" statement )?
+    }
+
     ExprPtr Parser::expression()
     {
         // expression -> assignment
@@ -190,28 +199,28 @@ namespace lex
 
     ExprPtr Parser::assignment()
     {
-      // assignment -> IDENTIFIER "=" expression
+        // assignment -> IDENTIFIER "=" expression
 
-      ExprPtr expr = comma();
+        ExprPtr expr = comma();
 
-      // Check if the next token is an assignment
-      if (match(TokenType::EQUAL))
-      {
-        Token equals = previous();
-        ExprPtr value = assignment(); // Recursive call to parse the right-hand side
-
-        // Check if the left-hand side is a variable
-        if(auto varExpr = std::dynamic_pointer_cast<Variable>(expr))
+        // Check if the next token is an assignment
+        if (match(TokenType::EQUAL))
         {
-          Token name = varExpr->name;
-          return make_Assign(name, value);
+            Token equals = previous();
+            ExprPtr value = assignment(); // Recursive call to parse the right-hand side
+
+            // Check if the left-hand side is a variable
+            if (auto varExpr = std::dynamic_pointer_cast<Variable>(expr))
+            {
+                Token name = varExpr->name;
+                return make_Assign(name, value);
+            }
+
+            // If it's not a variable, throw an error
+            throw error(equals, "Invalid assignment target.");
         }
 
-        // If it's not a variable, throw an error
-        throw error(equals, "Invalid assignment target.");
-      }
-
-      return expr;
+        return expr;
     }
 
     ExprPtr Parser::comma()

@@ -30,6 +30,7 @@ namespace lex
         StmtPtr print_statement();
         StmtPtr expression_statement();
         std::vector<StmtPtr> block();
+        StmtPtr if_statement();
 
         // expressions
         ExprPtr assignment();
