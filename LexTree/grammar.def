@@ -4,9 +4,14 @@ declaration    → variable_declaration
                | statement ;
 variable_declaration → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt 
-               | printStmt ;
+               | printStmt
+               | blockStmt ;
+               | ifStmt
+
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
+blockStmt      → "{" declaration* "}" ;
+ifStmt         → "if" "(" expression ")" statement ( "else" statement )?
 
 # Expressions Grammar for Lex Language
 expression     → assignment ;

@@ -15,10 +15,11 @@ namespace lex
         virtual ~StmtVisitor() = default;
 
         // statements themselves don't have any precedence ordering
-        virtual void visitExpressionStmt(class ExpressionStmt *stmt) = 0;   // Expression statement
-        virtual void visitPrintStmt(class PrintStmt *stmt) = 0;      // Print statement
-        virtual void visitVariableStmt(class VariableStmt *stmt) = 0; // Variable declaration statement
-        virtual void visitBlockStmt(class BlockStmt * stmt) = 0;      // Block statement
+        virtual void visitExpressionStmt(class ExpressionStmt *stmt) = 0; // Expression statement
+        virtual void visitPrintStmt(class PrintStmt *stmt) = 0;           // Print statement
+        virtual void visitVariableStmt(class VariableStmt *stmt) = 0;     // Variable declaration statement
+        virtual void visitBlockStmt(class BlockStmt *stmt) = 0;           // Block statement
+        virtual void visitIfStmt(class IfStmt *stmt) = 0;                 // If statement
     };
 
     // Base Statement class
@@ -62,9 +63,9 @@ namespace lex
         }
     };
 
-    class VariableStmt: public Stmt
+    class VariableStmt : public Stmt
     {
-      public:
+    public:
         const Token name;
         const ExprPtr initializer;
 
@@ -95,6 +96,24 @@ namespace lex
         }
     };
 
+    class IfStmt : public Stmt
+    {
+    public:
+        const ExprPtr condition;
+        const StmtPtr then_branch;
+        const StmtPtr else_branch;
+
+        IfStmt(ExprPtr condition, StmtPtr then_branch, StmtPtr else_branch)
+            : condition(std::move(condition)), then_branch(std::move(then_branch)), else_branch(std::move(else_branch))
+        {
+        }
+
+        void accept(StmtVisitor *visitor) override
+        {
+            visitor->visitIfStmt(this);
+        }
+    };
+
     // helper functions to create shared pointers for each statement type
     inline StmtPtr make_ExpressionStmt(ExprPtr expression)
     {
@@ -112,5 +131,10 @@ namespace lex
     inline StmtPtr make_BlockStmt(std::vector<StmtPtr> statements)
     {
         return std::make_shared<BlockStmt>(std::move(statements));
+    }
+
+    inline StmtPtr make_IfStmt(ExprPtr condition, StmtPtr then_branch, StmtPtr else_branch)
+    {
+        return std::make_shared<IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
     }
 }
