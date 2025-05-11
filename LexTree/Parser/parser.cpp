@@ -221,20 +221,7 @@ namespace lex
         consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
 
         StmtPtr body = statement();
-        if (increment != nullptr)
-        {
-            body = make_BlockStmt({body, make_ExpressionStmt(increment)});
-        }
-
-        if (condition == nullptr)
-            condition = make_Literal(true);
-
-        body = make_WhileStmt(condition, body);
-        if (initializer != nullptr)
-        {
-            body = make_BlockStmt({initializer, body});
-        }
-        return body;
+        return make_ForStmt(initializer, condition, increment, body);
     }
 
     StmtPtr Parser::expression_statement()
