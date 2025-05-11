@@ -31,6 +31,8 @@ namespace lex
         StmtPtr expression_statement();
         std::vector<StmtPtr> block();
         StmtPtr if_statement();
+        StmtPtr while_statement();
+        StmtPtr for_statement();
 
         // expressions
         ExprPtr expression();

@@ -141,11 +141,15 @@ namespace lex
 
     StmtPtr Parser::statement()
     {
-        // statement -> print_statement | expression_statement | if_statement | block
+        // statement -> print_statement | expression_statement | if_statement | while_statement | block
         if (match(TokenType::IF))
             return if_statement();
         if (match(TokenType::PRINT))
             return print_statement();
+        if (match(TokenType::WHILE))
+            return while_statement();
+        if (match(TokenType::FOR))
+            return for_statement();
         if (match(TokenType::LEFT_BRACE))
             return make_BlockStmt(this->block()); // wrapping in make_BlockStmt because block() returns a list of statements, which are not a node of AST
 
@@ -176,6 +180,61 @@ namespace lex
         ExprPtr value = expression();
         consume(TokenType::SEMICOLON, "Expect ';' after value.");
         return make_PrintStmt(value);
+    }
+
+    StmtPtr Parser::while_statement()
+    {
+        // while_statement -> "while" "(" expression ")" statement
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+        ExprPtr condition = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+        StmtPtr body = statement();
+        return make_WhileStmt(condition, body);
+    }
+
+    StmtPtr Parser::for_statement()
+    {
+        // for_statement -> "for" "(" expression? ";" expression? ";" expression? ")" statement
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+        StmtPtr initializer = nullptr;
+        if (match(TokenType::SEMICOLON))
+        {
+            // No initializer
+        }
+        else if (match(TokenType::VAR))
+        {
+            initializer = variable_declaration();
+        }
+        else
+        {
+            initializer = expression_statement();
+        }
+
+        ExprPtr condition = nullptr;
+        if (!check(TokenType::SEMICOLON))
+            condition = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+        ExprPtr increment = nullptr;
+        if (!check(TokenType::RIGHT_PAREN))
+            increment = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        StmtPtr body = statement();
+        if (increment != nullptr)
+        {
+            body = make_BlockStmt({body, make_ExpressionStmt(increment)});
+        }
+
+        if (condition == nullptr)
+            condition = make_Literal(true);
+
+        body = make_WhileStmt(condition, body);
+        if (initializer != nullptr)
+        {
+            body = make_BlockStmt({initializer, body});
+        }
+        return body;
     }
 
     StmtPtr Parser::expression_statement()

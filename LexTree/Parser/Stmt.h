@@ -20,6 +20,8 @@ namespace lex
         virtual void visitVariableStmt(class VariableStmt *stmt) = 0;     // Variable declaration statement
         virtual void visitBlockStmt(class BlockStmt *stmt) = 0;           // Block statement
         virtual void visitIfStmt(class IfStmt *stmt) = 0;                 // If statement
+        virtual void visitWhileStmt(class WhileStmt *stmt) = 0;           // While statement
+        virtual void visitForStmt(class ForStmt *stmt) = 0;               // For statement
     };
 
     // Base Statement class
@@ -114,8 +116,45 @@ namespace lex
         }
     };
 
+    class WhileStmt : public Stmt
+    {
+    public:
+        const ExprPtr condition;
+        const StmtPtr body;
+
+        WhileStmt(ExprPtr condition, StmtPtr body)
+            : condition(std::move(condition)), body(std::move(body))
+        {
+        }
+
+        void accept(StmtVisitor *visitor) override
+        {
+            visitor->visitWhileStmt(this);
+        }
+    };
+
+    class ForStmt : public Stmt
+    {
+    public:
+        const ExprPtr initializer;
+        const ExprPtr condition;
+        const ExprPtr increment;
+        const StmtPtr body;
+
+        ForStmt(ExprPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
+            : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body))
+        {
+        }
+
+        void accept(StmtVisitor *visitor) override
+        {
+            visitor->visitForStmt(this);
+        }
+    };
+
     // helper functions to create shared pointers for each statement type
-    inline StmtPtr make_ExpressionStmt(ExprPtr expression)
+    inline StmtPtr
+    make_ExpressionStmt(ExprPtr expression)
     {
         return std::make_shared<ExpressionStmt>(std::move(expression));
     }
@@ -136,5 +175,15 @@ namespace lex
     inline StmtPtr make_IfStmt(ExprPtr condition, StmtPtr then_branch, StmtPtr else_branch)
     {
         return std::make_shared<IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
+    }
+
+    inline StmtPtr make_WhileStmt(ExprPtr condition, StmtPtr body)
+    {
+        return std::make_shared<WhileStmt>(std::move(condition), std::move(body));
+    }
+
+    inline StmtPtr make_ForStmt(ExprPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
+    {
+        return std::make_shared<ForStmt>(std::move(initializer), std::move(condition), std::move(increment), std::move(body));
     }
 }

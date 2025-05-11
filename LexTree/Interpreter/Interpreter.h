@@ -30,6 +30,8 @@ namespace lex
         void visitVariableStmt(VariableStmt *stmt) override;
         void visitBlockStmt(BlockStmt *stmt) override;
         void visitIfStmt(IfStmt *stmt) override;
+        void visitWhileStmt(WhileStmt *stmt) override;
+        void visitForStmt(ForStmt *stmt) override;
 
     private:
         std::shared_ptr<Environment> environment = std::make_shared<Environment>();

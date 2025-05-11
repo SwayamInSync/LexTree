@@ -140,6 +140,35 @@ namespace lex
         }
     }
 
+    void Interpreter::visitWhileStmt(WhileStmt *stmt)
+    {
+        while (is_truthy(evaluate(stmt->condition)))
+        {
+            execute(stmt->body);
+        }
+    }
+
+    void Interpreter::visitForStmt(ForStmt *stmt)
+    {
+        // Execute the initializer
+        if (stmt->initializer != nullptr)
+        {
+            evaluate(stmt->initializer);
+        }
+
+        // Execute the loop
+        while (is_truthy(evaluate(stmt->condition)))
+        {
+            execute(stmt->body);
+
+            // Execute the increment
+            if (stmt->increment != nullptr)
+            {
+                evaluate(stmt->increment);
+            }
+        }
+    }
+
     // Expressions returns the evaluated value
 
     std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
