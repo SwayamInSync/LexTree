@@ -153,7 +153,7 @@ namespace lex
         // Execute the initializer
         if (stmt->initializer != nullptr)
         {
-            evaluate(stmt->initializer);
+            execute(stmt->initializer);
         }
 
         // Execute the loop

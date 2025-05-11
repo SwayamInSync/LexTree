@@ -136,12 +136,12 @@ namespace lex
     class ForStmt : public Stmt
     {
     public:
-        const ExprPtr initializer;
+        const StmtPtr initializer;
         const ExprPtr condition;
         const ExprPtr increment;
         const StmtPtr body;
 
-        ForStmt(ExprPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
+        ForStmt(StmtPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
             : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body))
         {
         }
@@ -182,7 +182,7 @@ namespace lex
         return std::make_shared<WhileStmt>(std::move(condition), std::move(body));
     }
 
-    inline StmtPtr make_ForStmt(ExprPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
+    inline StmtPtr make_ForStmt(StmtPtr initializer, ExprPtr condition, ExprPtr increment, StmtPtr body)
     {
         return std::make_shared<ForStmt>(std::move(initializer), std::move(condition), std::move(increment), std::move(body));
     }
