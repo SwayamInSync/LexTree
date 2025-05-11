@@ -189,6 +189,16 @@ namespace lex
     StmtPtr Parser::if_statement()
     {
         // if_statement -> "if" "(" expression ")" statement ( "else" statement )?
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+        ExprPtr condition = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+        StmtPtr then_branch = statement();
+        StmtPtr else_branch = nullptr;
+        if (match(TokenType::ELSE))
+        {
+            else_branch = statement();
+        }
+        return make_IfStmt(condition, then_branch, else_branch);
     }
 
     ExprPtr Parser::expression()
@@ -201,7 +211,7 @@ namespace lex
     {
         // assignment -> IDENTIFIER "=" expression
 
-        ExprPtr expr = comma();
+        ExprPtr expr = logical_or();
 
         // Check if the next token is an assignment
         if (match(TokenType::EQUAL))
@@ -218,6 +228,32 @@ namespace lex
 
             // If it's not a variable, throw an error
             throw error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    ExprPtr Parser::logical_or()
+    {
+        ExprPtr expr = logical_and();
+        while (match(TokenType::OR))
+        {
+            Token op = previous();
+            ExprPtr right = logical_and();
+            expr = make_Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    ExprPtr Parser::logical_and()
+    {
+        ExprPtr expr = comma();
+        while (match(TokenType::AND))
+        {
+            Token op = previous();
+            ExprPtr right = comma();
+            expr = make_Logical(expr, op, right);
         }
 
         return expr;

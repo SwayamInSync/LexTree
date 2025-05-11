@@ -127,6 +127,19 @@ namespace lex
         // no need to restore the environment here, as it will be done automatically
     }
 
+    void Interpreter::visitIfStmt(IfStmt *stmt)
+    {
+        const Value condition = evaluate(stmt->condition);
+        if (is_truthy(condition))
+        {
+            execute(stmt->then_branch);
+        }
+        else if (stmt->else_branch)
+        {
+            execute(stmt->else_branch);
+        }
+    }
+
     // Expressions returns the evaluated value
 
     std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
@@ -254,5 +267,24 @@ namespace lex
         Value value = evaluate(expr->value);
         environment->assign(expr->name, value);
         return value;
+    }
+
+    std::any Interpreter::visitLogicalExpr(Logical *expr)
+    {
+        Value left = evaluate(expr->left);
+
+        // Short-circuit evaluation
+        if (expr->operator_token.type == TokenType::OR)
+        {
+            if (is_truthy(left))
+                return left;
+        }
+        else // AND
+        {
+            if (!is_truthy(left))
+                return left;
+        }
+
+        return evaluate(expr->right);
     }
 }

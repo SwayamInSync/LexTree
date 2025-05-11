@@ -33,8 +33,10 @@ namespace lex
         StmtPtr if_statement();
 
         // expressions
-        ExprPtr assignment();
         ExprPtr expression();
+        ExprPtr assignment();
+        ExprPtr logical_or();
+        ExprPtr logical_and();
         ExprPtr comma();
         ExprPtr conditional();
         ExprPtr equality();

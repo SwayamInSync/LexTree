@@ -22,6 +22,7 @@ namespace lex
         std::any visitTernaryExpr(Ternary *expr) override;
         std::any visitVariableExpr(Variable *expr) override;
         std::any visitAssignExpr(Assign *expr) override;
+        std::any visitLogicalExpr(Logical *expr) override;
 
         // Visit methods from StmtVisitor
         void visitExpressionStmt(ExpressionStmt *stmt) override;
