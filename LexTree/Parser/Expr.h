@@ -2,7 +2,7 @@
 
 #include "../Lexer/Token.h"
 #include <memory>
-#include <any> 
+#include <any>
 #include <utility>
 
 namespace lex
@@ -21,7 +21,8 @@ namespace lex
         virtual std::any visitUnaryExpr(class Unary *expr) = 0;
         virtual std::any visitTernaryExpr(class Ternary *expr) = 0;
         virtual std::any visitVariableExpr(class Variable *expr) = 0;
-        virtual std::any visitAssignExpr(class Assign* expr) = 0;
+        virtual std::any visitAssignExpr(class Assign *expr) = 0;
+        virtual std::any visitLogicalExpr(class Logical *expr) = 0;
     };
 
     // Base Expression class
@@ -134,7 +135,7 @@ namespace lex
 
     class Assign : public Expr
     {
-      public:
+    public:
         const Token name;
         const ExprPtr value;
 
@@ -146,6 +147,22 @@ namespace lex
         std::any accept(ExprVisitor *visitor) override
         {
             return visitor->visitAssignExpr(this);
+        }
+    };
+
+    class Logical : public Expr
+    {
+    public:
+        const ExprPtr left;
+        const Token operator_token;
+        const ExprPtr right;
+        Logical(ExprPtr left, Token operator_token, ExprPtr right)
+            : left(std::move(left)), operator_token(std::move(operator_token)), right(std::move(right))
+        {
+        }
+        std::any accept(ExprVisitor *visitor) override
+        {
+            return visitor->visitLogicalExpr(this);
         }
     };
 
@@ -184,5 +201,9 @@ namespace lex
     inline ExprPtr make_Assign(Token name, ExprPtr value)
     {
         return std::make_shared<Assign>(std::move(name), std::move(value));
+    }
+    inline ExprPtr make_Logical(ExprPtr left, Token operator_token, ExprPtr right)
+    {
+        return std::make_shared<Logical>(std::move(left), std::move(operator_token), std::move(right));
     }
 }

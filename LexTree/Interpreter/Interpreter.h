@@ -22,12 +22,16 @@ namespace lex
         std::any visitTernaryExpr(Ternary *expr) override;
         std::any visitVariableExpr(Variable *expr) override;
         std::any visitAssignExpr(Assign *expr) override;
+        std::any visitLogicalExpr(Logical *expr) override;
 
         // Visit methods from StmtVisitor
         void visitExpressionStmt(ExpressionStmt *stmt) override;
         void visitPrintStmt(PrintStmt *stmt) override;
         void visitVariableStmt(VariableStmt *stmt) override;
         void visitBlockStmt(BlockStmt *stmt) override;
+        void visitIfStmt(IfStmt *stmt) override;
+        void visitWhileStmt(WhileStmt *stmt) override;
+        void visitForStmt(ForStmt *stmt) override;
 
     private:
         std::shared_ptr<Environment> environment = std::make_shared<Environment>();

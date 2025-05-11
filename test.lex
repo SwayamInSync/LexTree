@@ -1,26 +1,17 @@
-var a = "global a";
-var b = "global b";
-var c = "global c";
+var a = 0;
+while(a < 10)
 {
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
   print a;
-  print b;
-  print c;
+  a = a + 1;
 }
-{
-  {
-    {
-      z = 10;
-    }
-  }
+
+print "##############################";
+
+var a = 0;
+var temp;
+
+for (var b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
 }
-print a;
-print b;
-print c;

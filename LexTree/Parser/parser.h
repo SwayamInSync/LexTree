@@ -30,10 +30,15 @@ namespace lex
         StmtPtr print_statement();
         StmtPtr expression_statement();
         std::vector<StmtPtr> block();
+        StmtPtr if_statement();
+        StmtPtr while_statement();
+        StmtPtr for_statement();
 
         // expressions
-        ExprPtr assignment();
         ExprPtr expression();
+        ExprPtr assignment();
+        ExprPtr logical_or();
+        ExprPtr logical_and();
         ExprPtr comma();
         ExprPtr conditional();
         ExprPtr equality();

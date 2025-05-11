@@ -127,6 +127,48 @@ namespace lex
         // no need to restore the environment here, as it will be done automatically
     }
 
+    void Interpreter::visitIfStmt(IfStmt *stmt)
+    {
+        const Value condition = evaluate(stmt->condition);
+        if (is_truthy(condition))
+        {
+            execute(stmt->then_branch);
+        }
+        else if (stmt->else_branch)
+        {
+            execute(stmt->else_branch);
+        }
+    }
+
+    void Interpreter::visitWhileStmt(WhileStmt *stmt)
+    {
+        while (is_truthy(evaluate(stmt->condition)))
+        {
+            execute(stmt->body);
+        }
+    }
+
+    void Interpreter::visitForStmt(ForStmt *stmt)
+    {
+        // Execute the initializer
+        if (stmt->initializer != nullptr)
+        {
+            execute(stmt->initializer);
+        }
+
+        // Execute the loop
+        while (is_truthy(evaluate(stmt->condition)))
+        {
+            execute(stmt->body);
+
+            // Execute the increment
+            if (stmt->increment != nullptr)
+            {
+                evaluate(stmt->increment);
+            }
+        }
+    }
+
     // Expressions returns the evaluated value
 
     std::any Interpreter::visitGroupingExpr(lex::Grouping *expr)
@@ -254,5 +296,24 @@ namespace lex
         Value value = evaluate(expr->value);
         environment->assign(expr->name, value);
         return value;
+    }
+
+    std::any Interpreter::visitLogicalExpr(Logical *expr)
+    {
+        Value left = evaluate(expr->left);
+
+        // Short-circuit evaluation
+        if (expr->operator_token.type == TokenType::OR)
+        {
+            if (is_truthy(left))
+                return left;
+        }
+        else // AND
+        {
+            if (!is_truthy(left))
+                return left;
+        }
+
+        return evaluate(expr->right);
     }
 }

@@ -141,29 +141,37 @@ namespace lex
 
     StmtPtr Parser::statement()
     {
-        // statement -> print_statement | expression_statement
+        // statement -> print_statement | expression_statement | if_statement | while_statement | block
+        if (match(TokenType::IF))
+            return if_statement();
         if (match(TokenType::PRINT))
             return print_statement();
+        if (match(TokenType::WHILE))
+            return while_statement();
+        if (match(TokenType::FOR))
+            return for_statement();
         if (match(TokenType::LEFT_BRACE))
             return make_BlockStmt(this->block()); // wrapping in make_BlockStmt because block() returns a list of statements, which are not a node of AST
 
         return expression_statement();
     }
 
-    std::vector<StmtPtr> Parser::block() 
+    std::vector<StmtPtr> Parser::block()
     {
-      std::vector<StmtPtr> statements;
-  
-      while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
-          auto stmt = declaration();
-          if (stmt != nullptr) {
-              statements.push_back(stmt);
-          }
-      }
-  
-      consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
-      return statements;
-  }
+        std::vector<StmtPtr> statements;
+
+        while (!check(TokenType::RIGHT_BRACE) && !is_at_end())
+        {
+            auto stmt = declaration();
+            if (stmt != nullptr)
+            {
+                statements.push_back(stmt);
+            }
+        }
+
+        consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
 
     StmtPtr Parser::print_statement()
     {
@@ -174,12 +182,69 @@ namespace lex
         return make_PrintStmt(value);
     }
 
+    StmtPtr Parser::while_statement()
+    {
+        // while_statement -> "while" "(" expression ")" statement
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+        ExprPtr condition = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+        StmtPtr body = statement();
+        return make_WhileStmt(condition, body);
+    }
+
+    StmtPtr Parser::for_statement()
+    {
+        // for_statement -> "for" "(" expression? ";" expression? ";" expression? ")" statement
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+        StmtPtr initializer = nullptr;
+        if (match(TokenType::SEMICOLON))
+        {
+            // No initializer
+        }
+        else if (match(TokenType::VAR))
+        {
+            initializer = variable_declaration();
+        }
+        else
+        {
+            initializer = expression_statement();
+        }
+
+        ExprPtr condition = nullptr;
+        if (!check(TokenType::SEMICOLON))
+            condition = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+        ExprPtr increment = nullptr;
+        if (!check(TokenType::RIGHT_PAREN))
+            increment = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        StmtPtr body = statement();
+        return make_ForStmt(initializer, condition, increment, body);
+    }
+
     StmtPtr Parser::expression_statement()
     {
         // expression_statement -> expression ";"
         ExprPtr expr = expression();
         consume(TokenType::SEMICOLON, "Expect ';' after expression.");
         return make_ExpressionStmt(expr);
+    }
+
+    StmtPtr Parser::if_statement()
+    {
+        // if_statement -> "if" "(" expression ")" statement ( "else" statement )?
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+        ExprPtr condition = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+        StmtPtr then_branch = statement();
+        StmtPtr else_branch = nullptr;
+        if (match(TokenType::ELSE))
+        {
+            else_branch = statement();
+        }
+        return make_IfStmt(condition, then_branch, else_branch);
     }
 
     ExprPtr Parser::expression()
@@ -190,28 +255,54 @@ namespace lex
 
     ExprPtr Parser::assignment()
     {
-      // assignment -> IDENTIFIER "=" expression
+        // assignment -> IDENTIFIER "=" expression
 
-      ExprPtr expr = comma();
+        ExprPtr expr = logical_or();
 
-      // Check if the next token is an assignment
-      if (match(TokenType::EQUAL))
-      {
-        Token equals = previous();
-        ExprPtr value = assignment(); // Recursive call to parse the right-hand side
-
-        // Check if the left-hand side is a variable
-        if(auto varExpr = std::dynamic_pointer_cast<Variable>(expr))
+        // Check if the next token is an assignment
+        if (match(TokenType::EQUAL))
         {
-          Token name = varExpr->name;
-          return make_Assign(name, value);
+            Token equals = previous();
+            ExprPtr value = assignment(); // Recursive call to parse the right-hand side
+
+            // Check if the left-hand side is a variable
+            if (auto varExpr = std::dynamic_pointer_cast<Variable>(expr))
+            {
+                Token name = varExpr->name;
+                return make_Assign(name, value);
+            }
+
+            // If it's not a variable, throw an error
+            throw error(equals, "Invalid assignment target.");
         }
 
-        // If it's not a variable, throw an error
-        throw error(equals, "Invalid assignment target.");
-      }
+        return expr;
+    }
 
-      return expr;
+    ExprPtr Parser::logical_or()
+    {
+        ExprPtr expr = logical_and();
+        while (match(TokenType::OR))
+        {
+            Token op = previous();
+            ExprPtr right = logical_and();
+            expr = make_Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    ExprPtr Parser::logical_and()
+    {
+        ExprPtr expr = comma();
+        while (match(TokenType::AND))
+        {
+            Token op = previous();
+            ExprPtr right = comma();
+            expr = make_Logical(expr, op, right);
+        }
+
+        return expr;
     }
 
     ExprPtr Parser::comma()

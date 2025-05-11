@@ -4,14 +4,20 @@ declaration    → variable_declaration
                | statement ;
 variable_declaration → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt 
-               | printStmt ;
+               | printStmt
+               | blockStmt
+               | ifStmt ;
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
+blockStmt      → "{" declaration* "}" ;
+ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 
 # Expressions Grammar for Lex Language
 expression     → assignment ;
 assignment     → IDENTIFIER "=" assignment
-               | comma ;
+               | logic_or ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → comma ( "and" comma )* ;
 comma          → conditional ( "," conditional )* ;
 conditional    → equality ( "?" expression ":" conditional )? ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
